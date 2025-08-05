@@ -1,0 +1,13 @@
+# 屏蔽模型列表配置文件
+model_list.json
+
+# 其他常见的忽略文件
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+model/live2d-model-assets-master
+node_modules
+
+debug_*.js
+live2d-widget

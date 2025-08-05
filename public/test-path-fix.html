@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>路径修复测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { border-color: #4CAF50; background-color: #f9fff9; }
+        .error { border-color: #f44336; background-color: #fff9f9; }
+        .loading { border-color: #2196F3; background-color: #f9f9ff; }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #45a049; }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Live2D API 路径修复测试</h1>
+        
+        <div class="test-section" id="test1">
+            <h3>测试1: 正常路径访问</h3>
+            <p>测试路径: <code>/model/live2d-model-assets-master/assets/moc/girls-frontline/G11/destroy/model.moc</code></p>
+            <button onclick="testNormalPath()">测试正常路径</button>
+            <div class="result" id="result1"></div>
+        </div>
+
+        <div class="test-section" id="test2">
+            <h3>测试2: 问题路径修复</h3>
+            <p>测试路径: <code>/model/live2d-model-assets-master/assets/moc/girls-frontline/G11/destroy/model.json/model.moc</code></p>
+            <button onclick="testProblemPath()">测试问题路径</button>
+            <div class="result" id="result2"></div>
+        </div>
+
+        <div class="test-section" id="test3">
+            <h3>测试3: 模型列表获取</h3>
+            <button onclick="testModelList()">获取模型列表</button>
+            <div class="result" id="result3"></div>
+        </div>
+
+        <div class="test-section" id="test4">
+            <h3>测试4: live2d-widget兼容性</h3>
+            <button onclick="testLive2DWidget()">测试widget兼容性</button>
+            <div class="result" id="result4"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testRequest(url, testId, description) {
+            const section = document.getElementById(`test${testId}`);
+            const result = document.getElementById(`result${testId}`);
+            
+            section.className = 'test-section loading';
+            result.textContent = '测试中...';
+            
+            try {
+                const response = await fetch(url);
+                const success = response.ok;
+                
+                section.className = success ? 'test-section success' : 'test-section error';
+                
+                if (success) {
+                    const contentType = response.headers.get('content-type');
+                    const size = response.headers.get('content-length');
+                    result.textContent = `✅ 成功!\n状态码: ${response.status}\n内容类型: ${contentType}\n文件大小: ${size} 字节`;
+                } else {
+                    result.textContent = `❌ 失败!\n状态码: ${response.status}\n错误: ${response.statusText}`;
+                }
+            } catch (error) {
+                section.className = 'test-section error';
+                result.textContent = `❌ 网络错误: ${error.message}`;
+            }
+        }
+
+        async function testNormalPath() {
+            await testRequest('/model/live2d-model-assets-master/assets/moc/girls-frontline/G11/destroy/model.moc', 1, '正常路径');
+        }
+
+        async function testProblemPath() {
+            await testRequest('/model/live2d-model-assets-master/assets/moc/girls-frontline/G11/destroy/model.json/model.moc', 2, '问题路径');
+        }
+
+        async function testModelList() {
+            const section = document.getElementById('test3');
+            const result = document.getElementById('result3');
+            
+            section.className = 'test-section loading';
+            result.textContent = '测试中...';
+            
+            try {
+                const response = await fetch('/list');
+                const success = response.ok;
+                
+                if (success) {
+                    const data = await response.json();
+                    section.className = 'test-section success';
+                    result.textContent = `✅ 成功!\n模型数量: ${data.models.length}\n前3个模型: ${JSON.stringify(data.models.slice(0, 3), null, 2)}`;
+                } else {
+                    section.className = 'test-section error';
+                    result.textContent = `❌ 失败!\n状态码: ${response.status}`;
+                }
+            } catch (error) {
+                section.className = 'test-section error';
+                result.textContent = `❌ 网络错误: ${error.message}`;
+            }
+        }
+
+        async function testLive2DWidget() {
+            const section = document.getElementById('test4');
+            const result = document.getElementById('result4');
+            
+            section.className = 'test-section loading';
+            result.textContent = '测试中...';
+            
+            try {
+                // 测试多个live2d-widget相关的端点
+                const tests = [
+                    { url: '/model_list.json', name: 'model_list.json' },
+                    { url: '/get?id=0', name: '获取第一个模型' },
+                    { url: '/rand', name: '随机模型' }
+                ];
+                
+                const results = [];
+                for (const test of tests) {
+                    const response = await fetch(test.url);
+                    results.push({
+                        name: test.name,
+                        success: response.ok,
+                        status: response.status
+                    });
+                }
+                
+                const allSuccess = results.every(r => r.success);
+                section.className = allSuccess ? 'test-section success' : 'test-section error';
+                
+                result.textContent = results.map(r => 
+                    `${r.success ? '✅' : '❌'} ${r.name}: ${r.status}`
+                ).join('\n');
+                
+            } catch (error) {
+                section.className = 'test-section error';
+                result.textContent = `❌ 网络错误: ${error.message}`;
+            }
+        }
+
+        // 页面加载时自动运行所有测试
+        window.onload = function() {
+            setTimeout(() => {
+                testNormalPath();
+                setTimeout(() => testProblemPath(), 500);
+                setTimeout(() => testModelList(), 1000);
+                setTimeout(() => testLive2DWidget(), 1500);
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

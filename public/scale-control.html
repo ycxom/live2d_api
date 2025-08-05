@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live2D 模型缩放控制</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .control-group input, .control-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        
+        .preset-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        .preset-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 120px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .model-preview {
+            margin-top: 30px;
+            text-align: center;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+        
+        .current-config {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 Live2D 模型缩放控制</h1>
+        
+        <div class="control-group">
+            <label for="modelId">模型ID:</label>
+            <input type="text" id="modelId" placeholder="输入模型ID，例如: 1" value="1">
+        </div>
+        
+        <div class="control-group">
+            <label for="scale">缩放比例:</label>
+            <input type="number" id="scale" min="0.1" max="5" step="0.1" value="1.0">
+            <div class="preset-buttons">
+                <button class="preset-btn" onclick="setScale(0.3)">迷你 (0.3x)</button>
+                <button class="preset-btn" onclick="setScale(0.5)">小 (0.5x)</button>
+                <button class="preset-btn" onclick="setScale(1.0)">正常 (1.0x)</button>
+                <button class="preset-btn" onclick="setScale(1.5)">大 (1.5x)</button>
+                <button class="preset-btn" onclick="setScale(2.0)">巨大 (2.0x)</button>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label for="width">宽度限制 (像素):</label>
+            <input type="number" id="width" placeholder="留空为不限制">
+        </div>
+        
+        <div class="control-group">
+            <label for="height">高度限制 (像素):</label>
+            <input type="number" id="height" placeholder="留空为不限制">
+        </div>
+        
+        <div class="control-group">
+            <label>
+                <input type="checkbox" id="persistent"> 持久化保存配置
+            </label>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="previewModel()">预览模型</button>
+            <button class="btn btn-success" onclick="applyScale()">应用缩放</button>
+            <button class="btn btn-warning" onclick="resetScale()">重置缩放</button>
+        </div>
+        
+        <div id="result" class="result"></div>
+        
+        <div class="model-preview" id="modelPreview">
+            <p>点击"预览模型"查看效果</p>
+        </div>
+        
+        <div id="currentConfig" class="current-config" style="display: none;"></div>
+    </div>
+
+    <script>
+        function setScale(value) {
+            document.getElementById('scale').value = value;
+        }
+        
+        function showResult(message, isSuccess = true) {
+            const result = document.getElementById('result');
+            result.textContent = message;
+            result.className = `result ${isSuccess ? 'success' : 'error'}`;
+            result.style.display = 'block';
+            
+            setTimeout(() => {
+                result.style.display = 'none';
+            }, 3000);
+        }
+        
+        async function previewModel() {
+            const modelId = document.getElementById('modelId').value;
+            const scale = document.getElementById('scale').value;
+            const width = document.getElementById('width').value;
+            const height = document.getElementById('height').value;
+            
+            if (!modelId) {
+                showResult('请输入模型ID', false);
+                return;
+            }
+            
+            try {
+                const params = new URLSearchParams({
+                    id: modelId,
+                    scale: scale
+                });
+                
+                if (width) params.append('width', width);
+                if (height) params.append('height', height);
+                
+                const response = await fetch(`/scale?${params}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('模型预览加载成功！');
+                    document.getElementById('currentConfig').textContent = JSON.stringify(data, null, 2);
+                    document.getElementById('currentConfig').style.display = 'block';
+                    
+                    // 这里可以添加实际的Live2D模型渲染逻辑
+                    document.getElementById('modelPreview').innerHTML = `
+                        <h3>模型配置预览</h3>
+                        <p>模型ID: ${modelId}</p>
+                        <p>缩放比例: ${scale}x</p>
+                        ${width ? `<p>宽度: ${width}px</p>` : ''}
+                        ${height ? `<p>高度: ${height}px</p>` : ''}
+                        <p style="color: #666; font-size: 12px;">实际模型渲染需要集成Live2D SDK</p>
+                    `;
+                } else {
+                    showResult(data.error || '预览失败', false);
+                }
+            } catch (error) {
+                showResult('网络请求失败: ' + error.message, false);
+            }
+        }
+        
+        async function applyScale() {
+            const modelId = document.getElementById('modelId').value;
+            const scale = document.getElementById('scale').value;
+            const width = document.getElementById('width').value;
+            const height = document.getElementById('height').value;
+            const persistent = document.getElementById('persistent').checked;
+            
+            if (!modelId) {
+                showResult('请输入模型ID', false);
+                return;
+            }
+            
+            try {
+                const requestData = {
+                    id: modelId,
+                    scale: parseFloat(scale),
+                    persistent: persistent
+                };
+                
+                if (width) requestData.width = parseInt(width);
+                if (height) requestData.height = parseInt(height);
+                
+                const response = await fetch('/scale', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(data.message || '缩放设置成功！');
+                } else {
+                    showResult(data.error || '设置失败', false);
+                }
+            } catch (error) {
+                showResult('网络请求失败: ' + error.message, false);
+            }
+        }
+        
+        async function resetScale() {
+            document.getElementById('scale').value = '1.0';
+            document.getElementById('width').value = '';
+            document.getElementById('height').value = '';
+            document.getElementById('persistent').checked = false;
+            
+            showResult('缩放参数已重置');
+            
+            document.getElementById('modelPreview').innerHTML = '<p>点击"预览模型"查看效果</p>';
+            document.getElementById('currentConfig').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
