@@ -35,7 +35,7 @@ RUN mkdir -p logs && \
 USER live2d
 
 # 暴露端口
-EXPOSE 3000
+EXPOSE 5674
 
 # 设置入口点
 ENTRYPOINT ["docker-entrypoint.sh"]
@@ -43,7 +43,7 @@ ENTRYPOINT ["docker-entrypoint.sh"]
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "const http = require('http'); \
-    const options = { hostname: 'localhost', port: 3000, path: '/list', timeout: 2000 }; \
+    const options = { hostname: 'localhost', port: 5674, path: '/list', timeout: 2000 }; \
     const req = http.request(options, (res) => { \
       if (res.statusCode === 200) process.exit(0); \
       else process.exit(1); \

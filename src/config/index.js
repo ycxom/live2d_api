@@ -5,7 +5,7 @@ const env = process.env.NODE_ENV || 'development';
 
 // 基础配置
 const baseConfig = {
-  port: process.env.PORT || 3000,
+  port: process.env.PORT || 5674,
   host: process.env.HOST || '0.0.0.0',
   
   // 路径配置

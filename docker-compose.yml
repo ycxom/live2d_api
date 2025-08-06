@@ -5,7 +5,7 @@ services:
     build: .
     container_name: live2d-api
     ports:
-      - "3000:3000"
+      - "5674:5674"
     environment:
       - NODE_ENV=production
       - DEBUG=false
@@ -19,7 +19,7 @@ services:
     networks:
       - live2d-network
     healthcheck:
-      test: ["CMD", "node", "-e", "const http = require('http'); const options = { hostname: 'localhost', port: 3000, path: '/list', timeout: 2000 }; const req = http.request(options, (res) => { if (res.statusCode === 200) process.exit(0); else process.exit(1); }); req.on('error', () => process.exit(1)); req.on('timeout', () => process.exit(1)); req.end();"]
+      test: ["CMD", "node", "-e", "const http = require('http'); const options = { hostname: 'localhost', port: 5674, path: '/list', timeout: 2000 }; const req = http.request(options, (res) => { if (res.statusCode === 200) process.exit(0); else process.exit(1); }); req.on('error', () => process.exit(1)); req.on('timeout', () => process.exit(1)); req.end();"]
       interval: 30s
       timeout: 10s
       retries: 3
