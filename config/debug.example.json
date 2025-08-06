@@ -1,0 +1,56 @@
+{
+  "_comment": "Live2D API Debug 配置文件示例",
+  "_description": "复制此文件为 debug.json 并根据需要修改配置",
+  
+  "enabled": true,
+  "level": "info",
+  "logToFile": false,
+  "logFilePath": "./logs/debug.log",
+  "showTimestamp": true,
+  "showLevel": true,
+  "colorOutput": true,
+  
+  "_modules_comment": "模块调试开关，可以单独控制每个模块的日志输出",
+  "modules": {
+    "server": true,
+    "model": true,
+    "api": true,
+    "middleware": true,
+    "webgl": true,
+    "performance": true
+  },
+  
+  "_performance_comment": "性能监控配置",
+  "performance": {
+    "trackRequests": true,
+    "trackMemory": true,
+    "trackCPU": false,
+    "slowRequestThreshold": 1000
+  },
+  
+  "_api_comment": "API日志配置",
+  "api": {
+    "logRequests": true,
+    "logResponses": false,
+    "logErrors": true,
+    "maxBodyLength": 1000
+  },
+  
+  "_examples": {
+    "开发环境": {
+      "enabled": true,
+      "level": "debug",
+      "modules": { "server": true, "api": true, "performance": true }
+    },
+    "生产环境": {
+      "enabled": true,
+      "level": "warn",
+      "modules": { "server": false, "api": false, "performance": false }
+    },
+    "性能调试": {
+      "enabled": true,
+      "level": "info",
+      "performance": { "trackRequests": true, "trackMemory": true, "slowRequestThreshold": 500 }
+    }
+  }
+}

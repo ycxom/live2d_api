@@ -1,29 +1,31 @@
 {
   "name": "live2d-api",
   "version": "1.0.0",
-  "description": "Live2D模型API服务，支持智能目录扫描和模型管理",
+  "description": "Live2D API 服务器",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "scan": "node scripts/scanModels.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "scan": "node scripts/maintenance/scanModels.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "echo \"Build script placeholder\"",
+    "docker:build": "docker build -f docker/Dockerfile -t live2d-api .",
+    "docker:run": "docker-compose -f docker/docker-compose.yml up"
   },
   "keywords": [
     "live2d",
     "api",
-    "nodejs",
-    "model"
+    "server"
   ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
     "cors": "^2.8.5",
+    "express": "^4.18.2",
     "fs-extra": "^11.1.1",
     "path": "^0.12.7"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.1.10"
   }
 }

@@ -1,0 +1,26 @@
+{
+  "watch": [
+    "server_modular.js",
+    "start.js",
+    "routes/",
+    "controllers/",
+    "services/",
+    "middleware/",
+    "config/"
+  ],
+  "ext": "js,json",
+  "ignore": [
+    "node_modules/",
+    "debug/",
+    "model/",
+    "public/",
+    "live2d-widget/",
+    "docs/",
+    "scripts/"
+  ],
+  "env": {
+    "NODE_ENV": "development",
+    "PATH_FIX_DEBUG": "true"
+  },
+  "delay": "1000"
+}

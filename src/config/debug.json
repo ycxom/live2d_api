@@ -1,0 +1,30 @@
+{
+  "enabled": true,
+  "level": "info",
+  "logToFile": false,
+  "logFilePath": "./logs/debug.log",
+  "showTimestamp": true,
+  "showLevel": true,
+  "colorOutput": true,
+  "modules": {
+    "server": true,
+    "model": true,
+    "api": true,
+    "middleware": true,
+    "webgl": true,
+    "performance": true,
+    "pathFix": true
+  },
+  "performance": {
+    "trackRequests": true,
+    "trackMemory": true,
+    "trackCPU": false,
+    "slowRequestThreshold": 1000
+  },
+  "api": {
+    "logRequests": true,
+    "logResponses": false,
+    "logErrors": true,
+    "maxBodyLength": 1000
+  }
+}

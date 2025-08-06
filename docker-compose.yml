@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  live2d-api:
+    build: .
+    container_name: live2d-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DEBUG=false
+    volumes:
+      # 挂载配置目录以支持热重载和文件写入
+      - ./config:/app/config:rw
+      - ./logs:/app/logs:rw
+      # 如果需要持久化模型文件
+      - ./models:/app/models:rw
+    restart: unless-stopped
+    networks:
+      - live2d-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "const http = require('http'); const options = { hostname: 'localhost', port: 3000, path: '/list', timeout: 2000 }; const req = http.request(options, (res) => { if (res.statusCode === 200) process.exit(0); else process.exit(1); }); req.on('error', () => process.exit(1)); req.on('timeout', () => process.exit(1)); req.end();"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  live2d-network:
+    driver: bridge
+
+# 可选：如果需要数据持久化
+volumes:
+  live2d-logs:
+  live2d-models:

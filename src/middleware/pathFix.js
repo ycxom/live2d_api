@@ -10,13 +10,14 @@ const pathFixMiddleware = (req, res, next) => {
     let requestPath = req.path;
     debugLog(`原始请求路径: ${requestPath}`);
     
-    // 修复路径问题：处理 .model.json/ 或 model.json/ 被错误当作目录的情况
-    if (requestPath.includes('.model.json/') || requestPath.includes('model.json/')) {
+    // 修复路径问题：处理 .model.json/、model.json/ 或 .model3.json/ 被错误当作目录的情况
+    if (requestPath.includes('.model.json/') || requestPath.includes('model.json/') || requestPath.includes('.model3.json/')) {
         debugLog(`检测到需要修复的路径: ${requestPath}`);
         
-        // 如果请求的是 index.json，直接映射到实际的 model.json 文件
-        if (requestPath.endsWith('/index.json')) {
-            const modelMatch = req.path.match(/\/([^\/]*\.?model\.json)\//);
+        // 如果请求的是 index.json 或 undefined，直接映射到实际的 model.json 或 model3.json 文件
+        if (requestPath.endsWith('/index.json') || requestPath.endsWith('/undefined')) {
+            // 匹配 .model.json 或 .model3.json 文件
+            const modelMatch = req.path.match(/\/([^\/]*\.?model3?\.json)\//);
             if (modelMatch) {
                 const modelFile = modelMatch[1];
                 // 从原始路径中提取目录路径，去掉 /model 前缀
@@ -24,10 +25,12 @@ const pathFixMiddleware = (req, res, next) => {
                 const dirPath = originalPath.substring(0, originalPath.indexOf(`/${modelFile}/`));
                 // 移除开头的 /model 前缀
                 const cleanDirPath = dirPath.replace(/^\/model/, '');
-                const actualModelPath = `${cleanDirPath}/${modelFile}`;
-                debugLog(`映射 index.json 到实际模型文件: ${actualModelPath}`);
+                const actualModelPath = `/model${cleanDirPath}/${modelFile}`;
+                debugLog(`映射 ${requestPath.endsWith('/undefined') ? 'undefined' : 'index.json'} 到实际模型文件: ${actualModelPath}`);
                 req.url = actualModelPath;
                 req.path = actualModelPath;
+                next();
+                return;
             }
         } else {
             // 使用正则表达式匹配并修复路径
@@ -40,9 +43,9 @@ const pathFixMiddleware = (req, res, next) => {
                 return newPath;
             });
             
-            // 如果没有匹配到上面的模式，尝试更通用的匹配
-            if (fixedPath === requestPath && requestPath.includes('model.json/')) {
-                const altFixedPath = requestPath.replace(/\/([^\/]*model\.json)\/(.+)$/, '/$2');
+            // 如果没有匹配到上面的模式，尝试更通用的匹配（包括 model3.json）
+            if (fixedPath === requestPath && (requestPath.includes('model.json/') || requestPath.includes('model3.json/'))) {
+                const altFixedPath = requestPath.replace(/\/([^\/]*model3?\.json)\/(.+)$/, '/$2');
                 if (altFixedPath !== requestPath) {
                     debugLog(`使用备用修复规则: ${requestPath} -> ${altFixedPath}`);
                     req.url = altFixedPath;

@@ -6,8 +6,8 @@ model_list.json
 *.tmp
 .DS_Store
 Thumbs.db
-model/live2d-model-assets-master
+models/live2d-model-assets-master
 node_modules
 
-debug_*.js
+debug/
 live2d-widget
