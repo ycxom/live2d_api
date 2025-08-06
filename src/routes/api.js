@@ -59,9 +59,9 @@ router.get('/list', ModelController.getModelList);
 // 兼容原PHP版本 - 直接访问model_list.json
 router.get('/model_list.json', ModelController.getModelList);
 
-// 重新扫描模型目录 - 支持GET和POST方法
-router.get('/scan', ModelController.scanModels);
-router.post('/scan', ModelController.scanModels);
+// 禁用 /scan 接口，改为使用文件监听自动更新
+// router.get('/scan', ModelController.scanModels);
+// router.post('/scan', ModelController.scanModels);
 
 // 模型缩放控制
 router.get('/scale', ModelController.getModelWithScale);

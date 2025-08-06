@@ -1,8 +1,12 @@
 const app = require('./src/app');
 const config = require('./src/config');
+const WatcherService = require('./src/services/watcherService');
 
 const PORT = config.port;
 const HOST = config.host;
+
+// 初始化文件监听服务
+WatcherService.init();
 
 // 启动服务器
 app.listen(PORT, HOST, () => {
